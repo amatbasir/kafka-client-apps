@@ -18,9 +18,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * Notification Service: consumes merchant.onboarding.completed and (in this
  * POC) simulates sending a "welcome" notification to the merchant.
  *
- * This is the piece Abishek can leave untouched when validating the Kafka
+ * This is the piece that can be left untouched when validating the Kafka
  * Proxy option (should just work against the proxy's bootstrap address),
- * or swap for a native Solace JCSMP/JMS consumer when exploring that option.
+ * or swapped for a native Solace JCSMP/JMS consumer when exploring that option.
  */
 @Component
 public class MessageConsumer {

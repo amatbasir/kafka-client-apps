@@ -1,7 +1,7 @@
 # kafka-client-apps
 
 Two standalone Kafka client microservices (Java 25, Spring Boot 4, `spring-kafka`
-starter) matching the customer's stack, built as the baseline "before" apps
+starter) matching the target stack, built as the baseline "before" apps
 for the Kafka → Solace migration POC:
 
 - **`publisher-service`** (business name: **Onboarding Service**) — publishes

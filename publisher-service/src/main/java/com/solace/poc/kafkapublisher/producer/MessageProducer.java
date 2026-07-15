@@ -19,8 +19,8 @@ import java.util.UUID;
 /**
  * Publishes the merchant.onboarding.completed event.
  *
- * This is the piece Abishek will swap out when exploring the "native Solace
- * API" migration option (e.g. replacing KafkaTemplate/ProducerRecord with a
+ * This is the piece to swap out when exploring the "native Solace API"
+ * migration option (e.g. replacing KafkaTemplate/ProducerRecord with a
  * Solace JCSMP/JMS publisher), while keeping the same envelope, key, and
  * trace-id header semantics.
  */
