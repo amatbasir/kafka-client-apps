@@ -1,0 +1,23 @@
+# Maven build output
+target/
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Claude Code local settings (machine-specific, not for sharing)
+.claude/settings.local.json
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project

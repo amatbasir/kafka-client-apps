@@ -1,0 +1,33 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: onboarding-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+
+app:
+  kafka:
+    topic: merchant.onboarding.completed  # partitions=2, key=merchant_onboarding_id, TTL=30d (see KafkaTopicConfig)
+  service:
+    name: onboarding-service
+  deployment:
+    environment: ${APP_DEPLOYMENT_ENVIRONMENT:local}
+  streaming:
+    enabled: true       # simulator starts automatically on boot
+    interval-ms: 2000    # one simulated onboarding-completed event every 2s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.solace.poc: INFO
