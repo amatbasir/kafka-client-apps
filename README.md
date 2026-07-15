@@ -1,8 +1,8 @@
 # kafka-client-apps
 
-Two standalone Kafka client microservices (Java 25, Spring Boot 4, `spring-kafka`
-starter) matching the target stack, built as the baseline "before" apps
-for the Kafka → Solace migration POC:
+Two standalone Kafka client microservices (Java 25, Spring Boot 4,
+`spring-boot-starter-kafka`) matching the target stack, built as the baseline
+"before" apps for the Kafka → Solace migration POC:
 
 - **`publisher-service`** (business name: **Onboarding Service**) — publishes
   the `merchant.onboarding.completed` event when a prospective merchant
@@ -53,14 +53,19 @@ downstream.
 
 ## Prerequisites
 
-- Docker + Docker Compose plugin (`docker compose ...`)
-- JDK 25 and Maven only if you want to build/run outside Docker
+- **Docker** (with the Compose plugin, `docker compose ...`) **or Podman**
+  (`podman compose ...`). Every `docker compose` command below works the same
+  with `podman compose` — pick whichever you have installed.
+- Internet access on the first build (pulls base images + Maven dependencies).
+- JDK 25 and Maven only if you want to build or run the tests outside a
+  container (the container build handles Java/Maven for you).
 
-## Option 1 — Run locally with Docker
+## Option 1 — Run locally with Docker or Podman
 
 ```bash
+git clone https://github.com/amatbasir/kafka-client-apps.git
 cd kafka-client-apps
-docker compose up --build -d
+docker compose up --build -d      # or: podman compose up --build -d
 ```
 
 Trigger one onboarding-completed event:
@@ -104,6 +109,21 @@ curl http://localhost:8081/api/events/stream/status
 
 Adjust rate or autostart via `APP_STREAMING_ENABLED` / `APP_STREAMING_INTERVAL_MS`
 on the `onboarding-service` entry in `docker-compose.yml`.
+
+## Run the unit tests
+
+Both services ship broker-free unit tests (no running Kafka needed) covering
+the event envelope, key, and `trace-id` handling. With JDK 25 + Maven
+installed:
+
+```bash
+(cd publisher-service && mvn test)
+(cd consumer-service && mvn test)
+```
+
+The container image build uses `mvn package -DskipTests`, so images build even
+without a broker; run the commands above to exercise the producer/consumer
+logic directly.
 
 ## Option 2 — Run on an EC2 instance
 
