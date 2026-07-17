@@ -161,6 +161,75 @@ logic directly.
 > beyond it. If the POC needs to look more production-like, we can add
 > SASL/TLS on the broker listener.
 
+## Connecting to a secured broker (SASL_SSL)
+
+By default these apps connect over **PLAINTEXT with no authentication** — that
+is what the bundled `docker compose` broker uses, so local runs need nothing
+extra. Neither `application.yml` sets `security.protocol`, and Kafka defaults it
+to `PLAINTEXT`.
+
+The connection is env-driven, so pointing a service at a secured broker (e.g. a
+Kafka Proxy or a managed broker fronting Solace) is a **configuration change
+only — no code changes**. Below is the most common setup, **SASL_SSL + PLAIN**
+(username/password over TLS), shown two equivalent ways.
+
+**A. As `application.yml` properties** — add under `spring.kafka` in each
+service's `src/main/resources/application.yml`:
+
+```yaml
+spring:
+  kafka:
+    bootstrap-servers: my-broker.example.com:9093
+    security:
+      protocol: SASL_SSL
+    properties:
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: >
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="<API_KEY_OR_USER>"
+        password="<API_SECRET_OR_PASSWORD>";
+      # Only if the broker uses a private/self-signed CA
+      # (public CAs are already covered by the JVM default trust store):
+      # ssl.truststore.location: /etc/kafka/secrets/truststore.jks
+      # ssl.truststore.password: <truststore-password>
+```
+
+**B. As environment variables** — best for `docker compose` (no rebuild needed;
+add under each service's `environment:` block). Spring maps these onto the
+properties above:
+
+```yaml
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: my-broker.example.com:9093
+      SPRING_KAFKA_SECURITY_PROTOCOL: SASL_SSL
+      SPRING_KAFKA_PROPERTIES_SASL_MECHANISM: PLAIN
+      SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG: >-
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="<API_KEY_OR_USER>" password="<API_SECRET_OR_PASSWORD>";
+      # Private CA only:
+      # SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/truststore.jks
+      # SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD: <truststore-password>
+```
+
+Other protocols follow the same shape:
+
+- **SASL_PLAINTEXT** (SASL auth, no TLS — trusted network only): set
+  `security.protocol: SASL_PLAINTEXT`, keep the same `sasl.mechanism` /
+  `sasl.jaas.config`, drop the TLS/truststore bits.
+- **SCRAM** instead of PLAIN: `sasl.mechanism: SCRAM-SHA-512` (or `-256`) with
+  `org.apache.kafka.common.security.scram.ScramLoginModule required username="..." password="...";`.
+- **SSL** (mutual TLS, no SASL): `security.protocol: SSL` plus keystore and
+  truststore properties.
+
+> **Topic auto-creation needs the same credentials.** The publisher creates the
+> topic on boot via `KafkaTopicConfig` (an `AdminClient` call), so the SASL user
+> must be allowed to describe/create topics — otherwise disable that bean and
+> pre-provision the topic on the broker.
+>
+> **Never commit real credentials.** This repo is public; keep usernames,
+> passwords/API secrets, and keystore passwords in environment variables or a
+> secrets manager, not in `application.yml`.
+
 ## Notes for the migration work
 
 - `spring.kafka.bootstrap-servers` is fully env-driven (`KAFKA_BOOTSTRAP_SERVERS`)
